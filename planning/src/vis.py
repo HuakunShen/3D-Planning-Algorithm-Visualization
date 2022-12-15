@@ -25,5 +25,3 @@ def vis_2d_histogram(bmap: np.ndarray, figsize:Tuple[int, int]=(7, 7)) -> None:
     plt.close()
     return f
 
-
-
