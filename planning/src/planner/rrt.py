@@ -1,12 +1,10 @@
-from typing import Tuple, Callable, List, Iterable
+from typing import Tuple, List
 
 import numpy as np
-from _distutils_hack import override
 from plotly import graph_objects as go
 from planning.src.vis import vis_with_plotly
-from planning.src.map.map import BuildingMap, Map, Coor
+from planning.src.map.map import BuildingMap, Coor
 from planning.src.planner.a_star import euclidean_distance
-from planning.src.planner.planner import Planner
 
 
 def solve_rrt(bmap: BuildingMap, src: Tuple, target: Tuple, max_steps: int, max_streering_radius: float,
@@ -75,7 +73,7 @@ class RRTPlanner:
         return True
 
     def plan(self, src: Tuple, target: Tuple, max_steps: int, max_streering_radius: float,
-             destination_reached_radius: float):
+             destination_reached_radius: float) -> Tuple[bool, List, List[Coor]]:
         self.src = src
         self.target = target
         assert self.is_free(src), "Source is not Free"
@@ -118,10 +116,15 @@ class RRTPlanner:
                     fig.add_scatter3d(x=path_data[:, 1], y=path_data[:, 0], z=path_data[:, 2], mode="lines+markers",
                                       marker=dict(
                                           color="yellow",
-                                          size=6,
+                                          size=3,
                                       ), name="RRT Expansion")
 
         fig = vis_with_plotly(self.map.map, self.src, self.target, path_pts=self.path, visited=[], marker_size=1,
                               marker_opacity=0.1, z_axis_range_upper_bound=80,
                               background_injection_fn=background_injection_fn)
         return fig
+
+
+    def cost(self, a: Coor, b: Coor):
+        return euclidean_distance(a, b)
+        

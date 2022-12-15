@@ -59,13 +59,14 @@ def vis_with_plotly(z_data: np.ndarray, src: Coor, target: Coor, path_pts: List[
                           opacity=0.8
                       ), name="Target")
     path_data = np.array(path_pts)
-    fig.add_scatter3d(x=path_data[:, 1], y=path_data[:, 0], z=path_data[:, 2], mode="lines+markers",
-                      marker=dict(
-                          size=8,
-                          color="red",
-                          colorscale='Viridis',  # choose a colorscale
-                          opacity=1
-                      ), name="Path")
+    if len(path_data) != 0:
+        fig.add_scatter3d(x=path_data[:, 1], y=path_data[:, 0], z=path_data[:, 2], mode="lines+markers",
+                          marker=dict(
+                              size=8,
+                              color="red",
+                              colorscale='Viridis',  # choose a colorscale
+                              opacity=1
+                          ), name="Path")
     camera = dict(
         up=dict(x=0, y=0, z=1),
         center=dict(x=0, y=0, z=0),
