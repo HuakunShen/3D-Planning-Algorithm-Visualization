@@ -1,7 +1,8 @@
 numba==0.56.4
-pandas==1.4.4
-numpy
-seaborn
-matplotlib
+pandas~=1.4.2
+numpy~=1.22.3
+seaborn~=0.11.2
+matplotlib~=3.5.1
 networkx==2.8.5
 pytest==7.2.0
+plotly~=5.11.0

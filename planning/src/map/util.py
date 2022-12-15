@@ -96,6 +96,14 @@ def get_3d_neighbors_brute(pt: Coor, shape: np.array):
                 if 0 <= new_i < n_row and 0 <= new_j < n_col and 0 <= new_k < n_layers:
                     yield new_i, new_j, new_k
 
+@njit
+def clip(x: float, min_val: float, max_val: float):
+    if x < min_val:
+        return min_val
+    if x > max_val:
+        return max_val
+    return x
+    
 
 def intert_dict(d: dict):
     return {v: k for k, v in d.items()}

@@ -8,15 +8,16 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 from numba import njit
+from dataclasses import dataclass
 
 from planning.src.map.type import Coor
 from planning.src.vis import vis_2d_histogram
 
 
 class Map:
-    def __init__(self, shape: Tuple[int, int, int], dtype: Type = np.int8) -> None:
+    def __init__(self, shape: Coor, dtype: Type = np.int8) -> None:
         self.dtype = dtype
-        self.shape = shape
+        self.shape = np.array(shape)
         self.map = np.zeros(self.shape, dtype=self.dtype)
 
     @property
@@ -27,7 +28,7 @@ class Map:
     def size(self) -> int:
         return self.map.size
 
-    def is_coordinate_in_map(self, coor: Tuple[int, int, int]) -> bool:
+    def is_coordinate_in_map(self, coor: Coor) -> bool:
         if len(coor) != len(self.shape):
             return False
         return all([0 <= coor[dim] < self.shape[dim] for dim in range(len(coor))])
@@ -54,13 +55,49 @@ class ProbabilityMap(Map):
         self.map[prob_map < self.probability] = 1
 
 
-BuildingMapGenConfig = namedtuple("Point", "width1 width2 height n_building min_building_size max_building_size")
+# BuildingMapGenConfig = namedtuple("Point", "width1 width2 height n_building min_building_size max_building_size")
+@dataclass
+class BuildingMapGenConfig:
+    width1: int
+    width2: int
+    height: int
+    n_building: int
+    min_building_size: int
+    max_building_size: int
+    max_building_height: int = None
+    sample_point_max_height: int = None
+
+
+def gen_map(config: BuildingMapGenConfig) -> np.ndarray:
+    min_building_size, max_building_size = config.min_building_size, config.max_building_size
+
+    if max_building_size is None:
+        max_building_size = (config.width1 * config.width2) // 70 // config.n_building
+    if min_building_size is None:
+        min_building_size = (config.width1 * config.width2) // 100 // config.n_building
+
+    # build 2D random building map, cell value is building height
+    map2d = np.ones((config.width1, config.width2))  # one means floor height
+    max_building_height = min(config.max_building_height, config.height)
+    building_heights: Dict[tuple, int] = {}
+    building_centers = [(np.random.randint(0, config.width1), np.random.randint(0, config.width2)) for i in
+                        range(config.n_building)]
+    for idx, center in enumerate(building_centers):
+        x, y = center
+        building_heights[center] = np.random.randint(config.height // 4, max_building_height)
+        building_rand_width, building_rand_height = np.random.randint(min_building_size,
+                                                                      max_building_size), np.random.randint(
+            min_building_size, max_building_size)
+        map2d[x:x + building_rand_width, y:y + building_rand_height] = building_heights[center]
+        # map3D[x:x+building_rand_width, y:y+building_rand_height, 0:building_heights[center]] = 0
+    # sns.heatmap(map2D)
+    return map2d
 
 
 class BuildingMap(Map):
     def __init__(self, config: BuildingMapGenConfig, build_graph: bool = False) -> None:
         super().__init__((config.width1, config.width2, config.height), dtype=np.int8)
-        self.map = self.gen_map(config)
+        self.map = gen_map(config)
         self.config = config
         self.free_graph: nx.Graph = None
         self.obstacle_graph: nx.Graph = None
@@ -79,31 +116,6 @@ class BuildingMap(Map):
     @property
     def obstacle_graph_id_pos_map(self):
         return {v: k for k, v in self.obstacle_graph_pos_id_map.items()}
-
-    def gen_map(self, config: BuildingMapGenConfig) -> np.ndarray:
-        min_building_size, max_building_size = config.min_building_size, config.max_building_size
-
-        if max_building_size is None:
-            max_building_size = (config.width1 * config.width2) // 70 // config.n_building
-        if min_building_size is None:
-            min_building_size = (config.width1 * config.width2) // 100 // config.n_building
-
-        # build 2D random building map, cell value is building height
-        map2d = np.ones((config.width1, config.width2))  # one means floor height
-
-        building_heights: Dict[tuple, int] = {}
-        building_centers = [(np.random.randint(0, config.width1), np.random.randint(0, config.width2)) for i in
-                            range(config.n_building)]
-        for idx, center in enumerate(building_centers):
-            x, y = center
-            building_heights[center] = np.random.randint(config.height // 4, config.height)
-            building_rand_width, building_rand_height = np.random.randint(min_building_size,
-                                                                          max_building_size), np.random.randint(
-                min_building_size, max_building_size)
-            map2d[x:x + building_rand_width, y:y + building_rand_height] = building_heights[center]
-            # map3D[x:x+building_rand_width, y:y+building_rand_height, 0:building_heights[center]] = 0
-        # sns.heatmap(map2D)
-        return map2d
 
     @property
     def cartesian_map(self) -> np.ndarray:
@@ -127,8 +139,14 @@ class BuildingMap(Map):
         """
         return self.map[point[0]][point[1]] >= point[-1]
 
+    def num_free(self):
+        np.ones_like(self.map) * self.shape[-1] - self.map
+
+
     def overview_heatmap(self):
-        sns.heatmap(self.cartesian_map)
+        heatmap = sns.heatmap(self.cartesian_map)
+        heatmap.set(xlabel="x", ylabel="y", title='Overview Heatmap', aspect=1)
+        return heatmap
 
     @property
     def max_distance(self):
@@ -152,7 +170,8 @@ class BuildingMap(Map):
 
         def get_random_free_state():
             for i in range(np.prod((n_row, n_col, n_layer))):
-                x, y, z = np.random.randint(0, n_row), np.random.randint(0, n_col), np.random.randint(0, n_layer)
+                x, y, z = np.random.randint(0, n_row), np.random.randint(0, n_col), \
+                    np.random.randint(1, min(self.config.sample_point_max_height, n_layer))
                 if self.is_free((x, y, z)):
                     return x, y, z
             raise ValueError("No free state found")
