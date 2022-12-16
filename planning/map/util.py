@@ -122,3 +122,7 @@ def euclidean_distance(coor1: Coor, coor2: Coor):
 @njit
 def manhattan_distance(coor1: Coor, coor2: Coor):
     return sum([abs(coor1[i] - coor2[i]) for i in range(len(coor1))])
+
+
+def path_total_length(path: List[Coor]):
+    return sum([euclidean_distance(path[i], path[i + 1]) for i in range(0, len(path) - 1)])
