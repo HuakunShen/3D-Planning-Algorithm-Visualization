@@ -1,6 +1,7 @@
 import os
 import sys
 from typing import List, Type
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 import numpy as np
 import pandas as pd
@@ -22,14 +23,14 @@ if __name__ == "__main__":
     max_streering_radius = clip(bmap.shape[0] // 20, 2, 10)
     destination_reached_radius = clip(bmap.shape[0] // 25, 5, 8)
     neighbor_radius = clip(bmap.shape[0] // 25, 5, 8)
-    rrt_max_step = bmap.shape[0] * 50
+    rrt_max_step = bmap.shape[0] * 10
     rrt_planner = RRTPlanner(bmap, max_streering_radius=max_streering_radius, max_steps=rrt_max_step,
                              destination_reached_radius=destination_reached_radius)
     rrt_star_planner = RRTStarPlanner(bmap, max_streering_radius=max_streering_radius, max_steps=rrt_max_step * 3,
                                       destination_reached_radius=destination_reached_radius,
                                       neighbor_radius=neighbor_radius, quit_early=False)
-    # for planner in [rrt_star_planner]:
-    for planner in [astar_planner, dijkstra_planner, dfs_planner, rrt_planner, rrt_star_planner]:
+    for planner in [rrt_star_planner]:
+    # for planner in [astar_planner, dijkstra_planner, dfs_planner, rrt_planner, rrt_star_planner]:
         print(planner.__class__.__name__)
         solved, visited, path = planner.plan(src, target)
         if not solved:

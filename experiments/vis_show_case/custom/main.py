@@ -1,7 +1,8 @@
 import os
 import sys
-from typing import List, Type
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
+from typing import List, Type
 import numpy as np
 import pandas as pd
 from tqdm import tqdm

@@ -5,7 +5,7 @@ from planning.map.map import BuildingMap
 from planning.map.type import Coor
 from planning.map.util import euclidean_distance
 from planning.planner.rrt import RRTPlanner
-
+from tqdm import tqdm
 
 # https://arxiv.org/pdf/1005.0416.pdf
 # page 9: RRT* pseudocode
@@ -68,6 +68,10 @@ class RRTStarPlanner(RRTPlanner):
                         self.parents[x_near] = x_new
 
             # RRT * specific code
+        for child, parent in self.parents.items():
+            if self.cost(child, target) < self.destination_reached_radius:
+                self.parents[target] = child
+                break
             # if euclidean_distance(x_new, target) < self.destination_reached_radius:
             #     solved = True
             #     self.parents[target] = x_new
