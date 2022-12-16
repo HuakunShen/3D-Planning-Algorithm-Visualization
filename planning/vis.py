@@ -1,12 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from matplotlib.ticker import LinearLocator
 from typing import Tuple, List, Callable
 
 from plotly import graph_objects as go
 
-from planning.src.map.map import Coor
+from planning.map.map import Coor
 
 
 def vis_2d_histogram(bmap: np.ndarray, figsize: Tuple[int, int] = (7, 7)) -> None:
@@ -80,9 +79,9 @@ def vis_with_plotly(z_data: np.ndarray, src: Coor, target: Coor, path_pts: List[
         scene=dict(
             zaxis=dict(nticks=4, range=[0, z_axis_range_upper_bound or z_data.shape[0]])),
     )
+    z_max = np.max(z_data)
     fig.update_layout(scene_aspectmode='manual',
-                      scene_aspectratio=dict(x=z_data.shape[1] / z_data.shape[0], y=1,
-                                             z=np.max(z_data) / z_data.shape[0]))
+                      scene_aspectratio=dict(x=z_data.shape[1] / z_max, y=z_data.shape[0] / z_max, z=1))
 
     if len(visited):
         visited_data = np.array(list(visited))

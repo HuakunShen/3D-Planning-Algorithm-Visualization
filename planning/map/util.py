@@ -1,10 +1,9 @@
-from typing import Tuple, List
+from typing import List
 
 import numpy as np
-import networkx as nx
 from numba import njit
 
-from planning.src.map.type import Coor
+from planning.map.type import Coor
 
 
 def cartesian_plane_to_row_col_2D(x: int, y: int, shape: np.array):

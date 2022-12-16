@@ -1,6 +1,6 @@
 import numpy as np
 
-from planning.src.map.util import get_3d_neighbors_brute
+from planning.map.util import get_3d_neighbors_brute
 
 
 def test_get_3d_neighbors_brute():

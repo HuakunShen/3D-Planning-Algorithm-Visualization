@@ -2,9 +2,9 @@ from typing import Tuple, List
 
 import numpy as np
 from plotly import graph_objects as go
-from planning.src.vis import vis_with_plotly
-from planning.src.map.map import BuildingMap, Coor
-from planning.src.planner.a_star import euclidean_distance
+from planning.vis import vis_with_plotly
+from planning.map.map import BuildingMap, Coor
+from planning.planner.a_star import euclidean_distance
 
 
 def solve_rrt(bmap: BuildingMap, src: Tuple, target: Tuple, max_steps: int, max_streering_radius: float,
@@ -39,6 +39,7 @@ class RRTPlanner:
         self.path = []
         self.src = None
         self.target = None
+        self.n_step = 0
 
     def is_free(self, coor: Coor):
         return self.map.is_free(coor)
@@ -84,7 +85,7 @@ class RRTPlanner:
         path = []
         step_count = 0
         solved = False
-        for step in range(max_steps):
+        for self.n_step in range(max_steps):
             step_count += 1
             s_rand = self.sample_state()
             s_nearest = self.find_closest(list(tree_nodes), s_rand)
@@ -104,7 +105,7 @@ class RRTPlanner:
         self.path = path
         return solved, [], path
 
-    def vis(self):
+    def vis(self, display_exploring: bool = True):
         def background_injection_fn(fig: go.Figure):
             path_edges = set([(self.path[i], self.path[i + 1]) for i in range(len(self.path) - 1)])
             for s_from, s_to in self.parents.items():
@@ -119,12 +120,15 @@ class RRTPlanner:
                                           size=3,
                                       ), name="RRT Expansion")
 
+        injection = background_injection_fn if display_exploring else None
         fig = vis_with_plotly(self.map.map, self.src, self.target, path_pts=self.path, visited=[], marker_size=1,
-                              marker_opacity=0.1, z_axis_range_upper_bound=80,
-                              background_injection_fn=background_injection_fn)
+                              marker_opacity=0.1, z_axis_range_upper_bound=np.max(self.map.map),
+                              background_injection_fn=injection)
         return fig
-
 
     def cost(self, a: Coor, b: Coor):
         return euclidean_distance(a, b)
-        
+
+    @property
+    def path_cost(self):
+        return sum([self.cost(self.path[i], self.path[i + 1]) for i in range(len(self.path) - 1)])

@@ -1,17 +1,11 @@
-from collections import namedtuple
-import numpy as np
 from typing import Tuple, Type, Dict
 import networkx as nx
 import seaborn as sns
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import cm
-from matplotlib.ticker import LinearLocator
-from numba import njit
 from dataclasses import dataclass
 
-from planning.src.map.type import Coor
-from planning.src.vis import vis_2d_histogram
+from planning.map.type import Coor
+from planning.vis import vis_2d_histogram
 
 
 class Map:
@@ -77,14 +71,14 @@ def gen_map(config: BuildingMapGenConfig) -> np.ndarray:
         min_building_size = (config.width1 * config.width2) // 100 // config.n_building
 
     # build 2D random building map, cell value is building height
-    map2d = np.ones((config.width1, config.width2))  # one means floor height
+    map2d = np.zeros((config.width1, config.width2))  # one means floor height
     max_building_height = min(config.max_building_height, config.height)
     building_heights: Dict[tuple, int] = {}
     building_centers = [(np.random.randint(0, config.width1), np.random.randint(0, config.width2)) for i in
                         range(config.n_building)]
     for idx, center in enumerate(building_centers):
         x, y = center
-        building_heights[center] = np.random.randint(config.height // 4, max_building_height)
+        building_heights[center] = np.random.randint(max(config.height // 4, 1), max_building_height)
         building_rand_width, building_rand_height = np.random.randint(min_building_size,
                                                                       max_building_size), np.random.randint(
             min_building_size, max_building_size)
@@ -141,7 +135,6 @@ class BuildingMap(Map):
 
     def num_free(self):
         np.ones_like(self.map) * self.shape[-1] - self.map
-
 
     def overview_heatmap(self):
         heatmap = sns.heatmap(self.cartesian_map)

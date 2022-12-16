@@ -1,8 +1,5 @@
-import os
-import sys
 import numpy as np
-from planning.src.map.map import ProbabilityMap, BuildingMap, BuildingMapGenConfig
-import io
+from planning.map.map import ProbabilityMap, BuildingMap, BuildingMapGenConfig
 
 
 def test_ProbabilityMap():

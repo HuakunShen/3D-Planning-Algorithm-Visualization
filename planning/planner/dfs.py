@@ -2,8 +2,8 @@ from typing import Tuple, List, Callable, Set, Dict
 
 import numpy as np
 
-from planning.src.map import BuildingMap, Coor
-from planning.src.map.util import get_3d_neighbors, get_3d_neighbors_brute
+from planning.map import BuildingMap, Coor
+from planning.map.util import get_3d_neighbors, get_3d_neighbors_brute
 
 
 def solve_dfs(bmap: BuildingMap, src: Tuple, target: Tuple, consider_corner: bool = True):
