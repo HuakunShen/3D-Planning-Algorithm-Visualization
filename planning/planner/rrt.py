@@ -87,10 +87,8 @@ class RRTPlanner(Planner):
         tree_nodes = set()
         tree_nodes.add(src)
         path = []
-        step_count = 0
         solved = False
         for self.n_step in range(self.max_steps):
-            step_count += 1
             s_rand = self.sample_state()
             s_nearest = self.find_closest(list(tree_nodes), s_rand)
             s_new = self.steer_towards(s_nearest, s_rand, self.max_streering_radius)

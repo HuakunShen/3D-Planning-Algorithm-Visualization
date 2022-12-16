@@ -7,12 +7,15 @@ from typing import List, Type
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 from planning.experiment import run_planner
 from planning.map import BuildingMap, BuildingMapGenConfig
 from planning.scenarios import ScenarioConfig, Scenario, ScenarioSize
 from planning.map.util import manhattan_distance, euclidean_distance, clip
 from planning.planner import AStarPlanner, DijkstraPlanner, DFSPlanner, RRTPlanner, RRTStarPlanner, Planner
+from planning.vis import vis_2d_histogram
+
 
 if __name__ == "__main__":
     bmap, src, target = Scenario.get(0, ScenarioSize.L)
@@ -30,13 +33,15 @@ if __name__ == "__main__":
     rrt_star_planner = RRTStarPlanner(bmap, max_streering_radius=max_streering_radius, max_steps=rrt_max_step * 5,
                                       destination_reached_radius=destination_reached_radius,
                                       neighbor_radius=neighbor_radius, quit_early=False)
-    for planner in [rrt_star_planner]:
+    for planner in [astar_planner]:
     # for planner in [astar_planner, dijkstra_planner, dfs_planner, rrt_planner, rrt_star_planner]:
         print(planner.__class__.__name__)
         solved, visited, path = planner.plan(src, target)
         if not solved:
             print(f"Not Solved ({planner.__class__.__name__})")
             exit(0)
-        fig = planner.vis()
-        fig.show()
-        fig.write_image(f"{planner.__class__.__name__}.png")
+        vis_2d_histogram(bmap.map, src, target, visited=visited, path=path)
+        plt.show()
+        # fig = planner.vis()
+        # fig.show()
+        # fig.write_image(f"{planner.__class__.__name__}.png")

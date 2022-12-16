@@ -84,16 +84,17 @@ def get_3d_neighbors_brute(pt: Coor, shape: np.array):
     :return:
     """
     n_row, n_col, n_layers = shape
-
-    for i in range(-1, 2):
-        for j in range(-1, 2):
-            for k in range(-1, 2):
+    delta_offset = [0, -1, 1]
+    for i in delta_offset:
+        for j in delta_offset:
+            for k in delta_offset:
                 if i == 0 and j == 0 and k == 0:
                     continue
                 # if np.all([0 <= pt[dim] < shape[dim] for dim in range(len(pt))]):
                 new_i, new_j, new_k = pt[0] + i, pt[1] + j, pt[2] + k
                 if 0 <= new_i < n_row and 0 <= new_j < n_col and 0 <= new_k < n_layers:
                     yield new_i, new_j, new_k
+
 
 @njit
 def clip(x: float, min_val: float, max_val: float):
@@ -102,7 +103,7 @@ def clip(x: float, min_val: float, max_val: float):
     if x > max_val:
         return max_val
     return x
-    
+
 
 def intert_dict(d: dict):
     return {v: k for k, v in d.items()}
@@ -114,7 +115,7 @@ if __name__ == "__main__":
     doctest.testmod()
 
 
-@njit
+# @njit
 def euclidean_distance(coor1: Coor, coor2: Coor):
     return sum([(coor1[i] - coor2[i]) ** 2 for i in range(len(coor1))]) ** 0.5
 
@@ -122,3 +123,7 @@ def euclidean_distance(coor1: Coor, coor2: Coor):
 @njit
 def manhattan_distance(coor1: Coor, coor2: Coor):
     return sum([abs(coor1[i] - coor2[i]) for i in range(len(coor1))])
+
+
+def path_total_length(path: List[Coor]):
+    return sum([euclidean_distance(path[i], path[i + 1]) for i in range(0, len(path) - 1)])

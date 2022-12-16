@@ -28,7 +28,7 @@ if __name__ == "__main__":
     rrt_max_step = bmap.shape[0] * 50
     rrt_planner = RRTPlanner(bmap, max_streering_radius=max_streering_radius, max_steps=rrt_max_step,
                              destination_reached_radius=destination_reached_radius)
-    rrt_star_planner = RRTStarPlanner(bmap, max_streering_radius=max_streering_radius, max_steps=rrt_max_step * 5,
+    rrt_star_planner = RRTStarPlanner(bmap, max_streering_radius=max_streering_radius, max_steps=rrt_max_step,
                                       destination_reached_radius=destination_reached_radius,
                                       neighbor_radius=neighbor_radius, quit_early=False)
     # for planner in [rrt_star_planner]:

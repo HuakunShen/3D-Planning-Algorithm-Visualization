@@ -69,7 +69,7 @@ class RRTStarPlanner(RRTPlanner):
 
             # RRT * specific code
         for child, parent in self.parents.items():
-            if self.cost(child, target) < self.destination_reached_radius:
+            if self.cost(child, target) < self.destination_reached_radius and self.cost(child, target):
                 self.parents[target] = child
                 break
             # if euclidean_distance(x_new, target) < self.destination_reached_radius:

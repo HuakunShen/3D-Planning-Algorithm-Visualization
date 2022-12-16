@@ -5,7 +5,6 @@ import numpy as np
 from dataclasses import dataclass
 
 from planning.map.type import Coor
-from planning.vis import vis_2d_histogram
 
 
 class Map:
@@ -89,7 +88,8 @@ def gen_map(config: BuildingMapGenConfig) -> np.ndarray:
                         range(config.n_building)]
     for idx, center in enumerate(building_centers):
         x, y = center
-        building_heights[center] = np.random.randint(max(config.height // 4, 1), max_building_height)
+        building_heights[center] = np.random.randint(min(max(config.height // 4, 1), max_building_height - 1),
+                                                     max_building_height)
         building_rand_width, building_rand_height = np.random.randint(min_building_size,
                                                                       max_building_size), np.random.randint(
             min_building_size, max_building_size)
@@ -187,12 +187,12 @@ class BuildingMap(Map):
 
         def get_pair_random_state():
             src = get_random_free_state()
+            target = None
             for i in range(np.prod((n_row, n_col, n_layer))):
                 target = get_random_free_state()
                 if target != src:
                     break
             return src, target
-
         for i in range(1000):
             src, target = get_pair_random_state()
             dist = np.linalg.norm(np.array(src) - np.array(target))
@@ -225,9 +225,6 @@ class BuildingMap(Map):
                                         # G.add_edge((i, j, k), (i + di, j + dj, k + dk))
                                         G.add_edge(id_pos_map[(i, j, k)], id_pos_map[(i + di, j + dj, k + dk)])
         return G, id_pos_map
-
-    def vis_map(self, figsize=(10, 10)):
-        return vis_2d_histogram(self.map, figsize=figsize)
 
 
 def build_graph(map: np.ndarray, node_value: int):
