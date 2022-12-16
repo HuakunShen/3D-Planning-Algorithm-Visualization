@@ -13,7 +13,7 @@ from numba import njit
 class DijkstraPlanner(Planner):
     name: str = "Dijkastra"
 
-    def plan_impl(self, src: Tuple, target: Tuple, consider_corner: bool = True):
+    def plan_impl(self, src: Tuple, target: Tuple, consider_corner: bool = False):
         super().plan_impl(src, target)
         # neighbors = bmap.free_graph.neighbors(bmap.free_graph_pos_id_map[src])
         # print(len(list(neighbors)))

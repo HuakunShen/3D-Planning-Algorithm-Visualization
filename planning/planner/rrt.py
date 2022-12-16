@@ -95,22 +95,27 @@ class RRTPlanner(Planner):
             s_nearest = self.find_closest(list(tree_nodes), s_rand)
             s_new = self.steer_towards(s_nearest, s_rand, self.max_streering_radius)
             if self.path_is_obstacle_free(s_nearest, s_new):
+                if s_new == src or s_new == s_nearest:
+                    continue
                 self.parents[s_new] = s_nearest
                 tree_nodes.add(s_new)
                 if self.cost(s_new, target) < self.destination_reached_radius:
                     solved = True
-                    self.parents[target] = s_new
+                    if target != s_new:
+                        self.parents[target] = s_new
                     path: List[Coor] = []
                     cur = target
                     while cur is not None:
                         path.append(cur)
                         cur = self.parents[cur]
+                        if cur in path:
+                            raise AssertionError("Fall Into a Cycle")
+
                     break
         self.path = path
         return solved, list(tree_nodes), path
 
-    def vis(self, marker_opacity: float = 0.3, marker_size: float = 2, show_visited: bool = False,
-            display_exploring: bool = True):
+    def vis(self, marker_opacity: float = 0.3, marker_size: float = 2, show_visited: bool = True):
         """
         visualize planning result
         :param show_visited: show visited nodes, we don't show for rrt
@@ -134,9 +139,10 @@ class RRTPlanner(Planner):
                                           size=3,
                                       ), name="RRT Expansion")
 
-        injection = background_injection_fn if display_exploring else None
-        fig = vis_with_plotly(self.map.map, self.src, self.target, path_pts=self.path, visited=[], marker_size=1,
-                              marker_opacity=0.1, z_axis_range_upper_bound=np.max(self.map.map),
+        injection = background_injection_fn if show_visited else None
+        fig = vis_with_plotly(self.map.map, self.src, self.target, path_pts=self.path, visited=[], marker_size=marker_size,
+                              title=self.__class__.__name__,
+                              marker_opacity=marker_opacity, z_axis_range_upper_bound=np.max(self.map.map),
                               background_injection_fn=injection)
         return fig
 

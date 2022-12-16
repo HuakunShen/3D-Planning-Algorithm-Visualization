@@ -12,6 +12,15 @@ class ScenarioSize(Enum):
     L = 4
     XL = 5
 
+# map Size type to map size
+scenario_size_map = {
+    "XS": 3,
+    "S": 10,
+    "M": 50,
+    "S": 100,
+    "XL": 150
+}
+
 
 class ScenarioConfig:
     @staticmethod

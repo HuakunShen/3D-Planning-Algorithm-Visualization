@@ -42,6 +42,7 @@ class Planner(ABC):
         fig = vis_with_plotly(self.map.map, self.src, self.target, path_pts=self.path,
                               visited=self.visited if show_visited else [],
                               marker_size=marker_size,
+                              title=self.__class__.__name__,
                               marker_opacity=marker_opacity, z_axis_range_upper_bound=np.max(self.map.map),
                               background_injection_fn=None)
         return fig
