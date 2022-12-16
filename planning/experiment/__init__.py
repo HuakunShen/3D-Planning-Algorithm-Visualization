@@ -5,14 +5,14 @@ import numpy as np
 from planning.map import BuildingMapGenConfig, BuildingMap, Coor
 from planning.planner import Planner
 from planning.scenarios import Scenario
-
+from planning.map.util import path_total_length
 
 def run_planner(bmap: BuildingMap, planner: Planner, src: Coor, target: Coor, seed: int):
     solved, visited, path = planner.plan(src, target)
     return {
         "seed": seed,
         "solved": solved,
-        "path_length": len(path),
+        "path_length": path_total_length(path),
         "n_visited": len(visited),
         "n_free": bmap.num_free,
         "width": bmap.config.width1,

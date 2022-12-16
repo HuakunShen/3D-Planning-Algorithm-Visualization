@@ -18,7 +18,7 @@ from planning.vis import vis_2d_histogram
 
 
 if __name__ == "__main__":
-    bmap, src, target = Scenario.get(0, ScenarioSize.L)
+    bmap, src, target = Scenario.get(10, ScenarioSize.L)
     astar_planner = AStarPlanner(bmap)
     dijkstra_planner = DijkstraPlanner(bmap)
     dfs_planner = DFSPlanner(bmap)
@@ -27,21 +27,21 @@ if __name__ == "__main__":
     max_streering_radius = clip(bmap.shape[0] // 20, 2, 10)
     destination_reached_radius = clip(bmap.shape[0] // 25, 5, 8)
     neighbor_radius = clip(bmap.shape[0] // 25, 5, 8)
-    rrt_max_step = bmap.shape[0] * 10
-    rrt_planner = RRTPlanner(bmap, max_streering_radius=max_streering_radius, max_steps=rrt_max_step,
+    rrt_max_step = bmap.shape[0] * 30
+    rrt_planner = RRTPlanner(bmap, max_streering_radius=max_streering_radius, max_steps=rrt_max_step * 2,
                              destination_reached_radius=destination_reached_radius)
-    rrt_star_planner = RRTStarPlanner(bmap, max_streering_radius=max_streering_radius, max_steps=rrt_max_step * 5,
+    rrt_star_planner = RRTStarPlanner(bmap, max_streering_radius=max_streering_radius, max_steps=rrt_max_step * 2,
                                       destination_reached_radius=destination_reached_radius,
                                       neighbor_radius=neighbor_radius, quit_early=False)
-    for planner in [astar_planner]:
+    # for planner in [rrt_star_planner]:
+    for planner in [rrt_planner, rrt_star_planner]:
     # for planner in [astar_planner, dijkstra_planner, dfs_planner, rrt_planner, rrt_star_planner]:
+        np.random.seed(10)
         print(planner.__class__.__name__)
         solved, visited, path = planner.plan(src, target)
         if not solved:
             print(f"Not Solved ({planner.__class__.__name__})")
             exit(0)
-        vis_2d_histogram(bmap.map, src, target, visited=visited, path=path)
-        plt.show()
-        # fig = planner.vis()
+        fig = planner.vis(marker_size=1, marker_opacity=0.2)
         # fig.show()
-        # fig.write_image(f"{planner.__class__.__name__}.png")
+        fig.write_image(f"{planner.__class__.__name__}.png")

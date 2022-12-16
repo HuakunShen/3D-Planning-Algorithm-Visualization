@@ -30,8 +30,8 @@ if __name__ == "__main__":
     rrt_star_planner = RRTStarPlanner(bmap, max_streering_radius=max_streering_radius, max_steps=rrt_max_step * 5,
                                       destination_reached_radius=destination_reached_radius,
                                       neighbor_radius=neighbor_radius, quit_early=False)
-    for planner in [rrt_star_planner]:
-    # for planner in [astar_planner, dijkstra_planner, dfs_planner, rrt_planner, rrt_star_planner]:
+    # for planner in [rrt_star_planner]:
+    for planner in [astar_planner, dijkstra_planner, dfs_planner, rrt_planner, rrt_star_planner]:
         print(planner.__class__.__name__)
         solved, visited, path = planner.plan(src, target)
         if not solved:
