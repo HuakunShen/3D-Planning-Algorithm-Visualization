@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
-from typing import Tuple, List, Callable
+from typing import Tuple, List, Callable, Union, Set
 
 from plotly import graph_objects as go
 
@@ -30,7 +30,7 @@ def vis_2d_histogram(bmap: np.ndarray, figsize: Tuple[int, int] = (7, 7)) -> Non
 
 
 def vis_with_plotly(z_data: np.ndarray, src: Coor, target: Coor, path_pts: List[Coor] = [],
-                    title: str = "Visualization", visited: List[Coor] = [], marker_size: float = 1,
+                    title: str = "Visualization", visited: Union[List[Coor], Set[Coor]] = [], marker_size: float = 1,
                     marker_opacity: float = 0.3, z_axis_range_upper_bound: float = None,
                     background_injection_fn: Callable = None):
     # path_df = pd.DataFrame(np.array(path_pts), columns=['row', 'col', 'height'])

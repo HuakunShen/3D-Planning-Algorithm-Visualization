@@ -3,20 +3,24 @@ from typing import Tuple, List
 
 from planning.map.map import BuildingMap
 from planning.map.type import Coor
-from planning.planner.a_star import euclidean_distance
+from planning.map.util import euclidean_distance
 from planning.planner.rrt import RRTPlanner
-from tqdm import tqdm
 
 
 # https://arxiv.org/pdf/1005.0416.pdf
 # page 9: RRT* pseudocode
 class RRTStarPlanner(RRTPlanner):
-    def __init__(self, m: BuildingMap, neighbor_radius: int):
-        super().__init__(m)
-        self.neighbor_radius = neighbor_radius
+    name: str = "RRT*"
 
-    def plan(self, src: Tuple, target: Tuple, max_steps: int, max_streering_radius: float,
-             destination_reached_radius: float, quit_early: bool = False) -> Tuple[bool, List, List[Coor]]:
+    def __init__(self, m: BuildingMap, max_streering_radius: int = 10,
+                 max_steps: int = 200, destination_reached_radius: float = 4,
+                 neighbor_radius: int = 5,
+                 quit_early: bool = False):
+        super().__init__(m, max_streering_radius, max_steps, destination_reached_radius)
+        self.neighbor_radius = neighbor_radius
+        self.quit_early = quit_early
+
+    def plan_impl(self, src: Tuple, target: Tuple) -> Tuple[bool, List, List[Coor]]:
         self.src = src
         self.target = target
         assert self.is_free(src), "Source is not Free"
@@ -30,11 +34,11 @@ class RRTStarPlanner(RRTPlanner):
         step_count = 0
         solved = False
 
-        for self.n_step in tqdm(range(max_steps)):
+        for self.n_step in range(self.max_steps):
             step_count += 1
             x_rand = self.sample_state()
             x_nearest = self.find_closest(list(tree_nodes), x_rand)
-            x_new = self.steer_towards(x_nearest, x_rand, max_streering_radius)
+            x_new = self.steer_towards(x_nearest, x_rand, self.max_streering_radius)
             if x_new == src:
                 # avoid cycle, never set parent for src
                 continue
@@ -45,8 +49,8 @@ class RRTStarPlanner(RRTPlanner):
                 # find all nodes within a radius of s_new
                 neighbors = [node for node in tree_nodes if euclidean_distance(node, x_new) < self.neighbor_radius]
                 for x_near in neighbors:
-                    if x_near == x_min:
-                        continue
+                    # if x_near == x_min:
+                    #     continue
                     # find a neighboring node with even lower cost to x_new, similar to A*
                     if self.path_is_obstacle_free(x_near, x_new):
                         tentative_cost = cost[x_near] + self.cost(x_near, x_new)
@@ -64,11 +68,13 @@ class RRTStarPlanner(RRTPlanner):
                         self.parents[x_near] = x_new
 
             # RRT * specific code
-            if euclidean_distance(x_new, target) < destination_reached_radius:
-                solved = True
-                self.parents[target] = x_new
-                if quit_early:
-                    break
+            # if euclidean_distance(x_new, target) < self.destination_reached_radius:
+            #     solved = True
+            #     self.parents[target] = x_new
+            #     if self.quit_early:
+            #         break
+        if target in self.parents.keys():
+            solved = True
         if solved:
             path: List[Coor] = []
             cur = target
@@ -80,4 +86,4 @@ class RRTStarPlanner(RRTPlanner):
                 if count > 100_000:
                     raise AssertionError("May Fall Into a Cycle")
             self.path = path
-        return solved, [], path
+        return solved, list(tree_nodes), path

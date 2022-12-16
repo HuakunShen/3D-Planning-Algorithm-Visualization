@@ -2,34 +2,40 @@ from typing import Tuple, List, Callable, Set, Dict
 
 import numpy as np
 
-from planning.map import BuildingMap, Coor
-from planning.map.util import get_3d_neighbors, get_3d_neighbors_brute
+from planning.map.map import BuildingMap
+from planning.map.type import Coor
+from planning.map.util import get_3d_neighbors, get_3d_neighbors_brute, euclidean_distance
+from planning.planner.planner import Planner
 
 
-def solve_dfs(bmap: BuildingMap, src: Tuple, target: Tuple, consider_corner: bool = True):
-    get_neighbor_fn = get_3d_neighbors_brute if consider_corner else get_3d_neighbors
-    stack = [src]
-    discovered = set()
-    solved = False
-    parents = {src: None}
-    curr = None
-    while len(stack) != 0:
-        curr = stack.pop()
-        if curr == target:
-            solved = True
-            break
-        if curr not in discovered:
-            discovered.add(curr)
-            for neighbor in get_neighbor_fn(curr, bmap.shape):
-                if neighbor not in discovered:
-                    parents[neighbor] = curr
-                    stack.append(neighbor)
+class DFSPlanner(Planner):
+    name: str = "DFS"
 
-    path: List[Coor] = []
-    while curr is not None:
-        path.append(curr)
-        curr = parents[curr]
-    return solved, discovered, path
+    def plan_impl(self, src: Tuple, target: Tuple, consider_corner: bool = True):
+        super().plan_impl(src, target)
+        get_neighbor_fn = get_3d_neighbors_brute if consider_corner else get_3d_neighbors
+        stack = [src]
+        self.visited = set()
+        self.solved = False
+        parents = {src: None}
+        curr = None
+        while len(stack) != 0:
+            curr = stack.pop()
+            if curr == target:
+                self.solved = True
+                break
+            if curr not in self.visited:
+                self.visited.add(curr)
+                for neighbor in get_neighbor_fn(curr, self.map.shape):
+                    if neighbor not in self.visited and self.map.is_free(neighbor):
+                        parents[neighbor] = curr
+                        stack.append(neighbor)
+
+        self.path: List[Coor] = []
+        while curr is not None:
+            self.path.append(curr)
+            curr = parents[curr]
+        return self.solved, self.visited, self.path
 
 
 def depth_limited_search(node: Coor, depth: int, target: Coor, get_neighbor_fn: Callable, shape: np.array,

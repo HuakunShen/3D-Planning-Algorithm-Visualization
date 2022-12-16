@@ -112,3 +112,13 @@ if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+
+
+@njit
+def euclidean_distance(coor1: Coor, coor2: Coor):
+    return sum([(coor1[i] - coor2[i]) ** 2 for i in range(len(coor1))]) ** 0.5
+
+
+@njit
+def manhattan_distance(coor1: Coor, coor2: Coor):
+    return sum([abs(coor1[i] - coor2[i]) for i in range(len(coor1))])

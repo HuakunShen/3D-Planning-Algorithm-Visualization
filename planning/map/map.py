@@ -15,12 +15,23 @@ class Map:
         self.map = np.zeros(self.shape, dtype=self.dtype)
 
     @property
-    def zero_percentage(self) -> float:
-        return np.count_nonzero(self.map == 0) / self.map.size
+    def num_free(self) -> int:
+        """
+        :return: number of free nodes
+        :rtype: int
+        """
+        return np.count_nonzero(self.map == 0)
+
+    @property
+    def free_percentage(self) -> float:
+        return self.num_free / self.size
 
     @property
     def size(self) -> int:
         return self.map.size
+
+    def is_free(self, coor: Coor) -> bool:
+        raise NotImplementedError
 
     def is_coordinate_in_map(self, coor: Coor) -> bool:
         if len(coor) != len(self.shape):
@@ -31,7 +42,7 @@ class Map:
         data = [
             ("Shape", self.map.shape),
             ("dtype", self.dtype),
-            ("zero_percentage", self.zero_percentage)
+            ("zero_percentage", self.free_percentage)
         ]
         return f"{self.__class__.__name__}" + "".join([f"\n\t{d[0]}: {d[1]}" for d in data])
 
@@ -104,6 +115,14 @@ class BuildingMap(Map):
         self.target: Tuple[int] = None
 
     @property
+    def num_free(self) -> int:
+        return int(np.sum(np.ones_like(self.map) * self.config.height - self.map))
+
+    @property
+    def size(self) -> int:
+        return int(np.prod(self.shape))
+
+    @property
     def free_graph_id_pos_map(self):
         return {v: k for k, v in self.free_graph_pos_id_map.items()}
 
@@ -132,9 +151,6 @@ class BuildingMap(Map):
         :rtype: bool
         """
         return self.map[point[0]][point[1]] >= point[-1]
-
-    def num_free(self):
-        np.ones_like(self.map) * self.shape[-1] - self.map
 
     def overview_heatmap(self):
         heatmap = sns.heatmap(self.cartesian_map)
